@@ -13,6 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "02 FSharp MVC", "02 FSharp 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSharp.Mvc", "src\CSharp.Mvc\CSharp.Mvc.csproj", "{7E1BD2BD-766B-4A74-B0DF-3D1C92CED15D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FSharp.MvcWeb", "src\FSharp.Mvc\FSharp.MvcWeb\FSharp.MvcWeb.csproj", "{9A5C10FA-8668-473C-9717-825B92105A65}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FSharp.MvcWebApp", "src\FSharp.Mvc\FSharp.MvcWebApp\FSharp.MvcWebApp.fsproj", "{6F50113E-41AE-45D2-B98C-0C74648D89DF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,11 +27,21 @@ Global
 		{7E1BD2BD-766B-4A74-B0DF-3D1C92CED15D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E1BD2BD-766B-4A74-B0DF-3D1C92CED15D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E1BD2BD-766B-4A74-B0DF-3D1C92CED15D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9A5C10FA-8668-473C-9717-825B92105A65}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9A5C10FA-8668-473C-9717-825B92105A65}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9A5C10FA-8668-473C-9717-825B92105A65}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9A5C10FA-8668-473C-9717-825B92105A65}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6F50113E-41AE-45D2-B98C-0C74648D89DF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6F50113E-41AE-45D2-B98C-0C74648D89DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6F50113E-41AE-45D2-B98C-0C74648D89DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6F50113E-41AE-45D2-B98C-0C74648D89DF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{7E1BD2BD-766B-4A74-B0DF-3D1C92CED15D} = {EA092395-F068-400D-A713-7FE66C74D419}
+		{9A5C10FA-8668-473C-9717-825B92105A65} = {5A217D01-82B1-45BC-AE8A-C79083E00F56}
+		{6F50113E-41AE-45D2-B98C-0C74648D89DF} = {5A217D01-82B1-45BC-AE8A-C79083E00F56}
 	EndGlobalSection
 EndGlobal
