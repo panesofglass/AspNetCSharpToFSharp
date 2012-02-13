@@ -1,0 +1,15 @@
+﻿@model MsdnWeb.Todo.TodoItem
+@{ ViewBag.Title = "F# Create Item"; }
+
+<section>
+	<header>
+		<h2>@ViewBag.Title</h2>
+	</header>
+	@using (Html.BeginForm("Index", "Todo")) {
+		@Html.ValidationSummary()
+		@Html.AntiForgeryToken()
+		@Html.EditorForModel()
+		<button type="submit" name="Submit">Create</button>
+		@Html.ActionLink("Cancel", "Index")
+	}
+</section>

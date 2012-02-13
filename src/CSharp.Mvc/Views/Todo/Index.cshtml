@@ -1,0 +1,10 @@
+﻿@model CSharp.Mvc.Models.TodoList
+@{ ViewBag.Title = "C# To-Do List"; }
+
+<section>
+	<header>
+		<h2>@ViewBag.Title</h2>
+        @Html.ActionLink("Add item", "Create")
+	</header>
+	@Html.DisplayForModel()
+</section>
