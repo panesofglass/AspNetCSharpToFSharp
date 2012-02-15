@@ -9,7 +9,7 @@ namespace CSharp.Mvc.Controllers {
 			return View(TodoList);
 		}
 
-		[HttpPost]
+		[HttpPost, ValidateAntiForgeryToken]
 		public ActionResult Index(TodoItem item) {
 			if (ModelState.IsValid) {
 				TodoList.Add(item);

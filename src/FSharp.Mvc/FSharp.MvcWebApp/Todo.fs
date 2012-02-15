@@ -14,6 +14,12 @@ type TodoState
   = Complete
   | OnTime
   | Overdue
+  with
+  override x.ToString() =
+    match x with
+    | Complete -> "Complete"
+    | OnTime -> "On-time"
+    | Overdue -> "Overdue"
 
 type TodoItem() =
   let mutable name = ""
@@ -59,7 +65,7 @@ type TodoController() =
     static let mutable todoList = new TodoList()
     member this.Index () =
         this.View(todoList) :> ActionResult
-    [<HttpPost>]
+    [<HttpPost; ValidateAntiForgeryToken>]
     member this.Index (item) =
         if this.ModelState.IsValid then
           todoList.Add(item)
