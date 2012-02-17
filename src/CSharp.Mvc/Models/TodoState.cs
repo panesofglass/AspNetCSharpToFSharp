@@ -1,5 +1,7 @@
-namespace CSharp.Mvc.Models {
-	public enum TodoState {
+namespace CSharp.Mvc.Models
+{
+	public enum TodoState
+	{
 		Complete,
 		OnTime,
 		Overdue
