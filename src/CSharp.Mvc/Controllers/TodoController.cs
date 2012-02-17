@@ -3,16 +3,14 @@ using CSharp.Mvc.Models;
 
 namespace CSharp.Mvc.Controllers {
 	public class TodoController : Controller {
-		private static readonly TodoList TodoList = new TodoList();
-
 		public ActionResult Index() {
-			return View(TodoList);
+			return View(Global.TodoList);
 		}
 
 		[HttpPost, ValidateAntiForgeryToken]
 		public ActionResult Index(TodoItem item) {
 			if (ModelState.IsValid) {
-				TodoList.Add(item);
+				Global.TodoList.Add(item);
 				Response.StatusCode = (int) System.Net.HttpStatusCode.Created;
 				return RedirectToAction("Index");
 			}

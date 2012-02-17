@@ -1,9 +1,12 @@
 ﻿using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using CSharp.Mvc.Models;
 
 namespace CSharp.Mvc {
-	public class MvcApplication : HttpApplication {
+	public class Global : HttpApplication {
+		public static readonly TodoList TodoList = new TodoList();
+
 		public static void RegisterGlobalFilters(GlobalFilterCollection filters) {
 			filters.Add(new HandleErrorAttribute());
 		}

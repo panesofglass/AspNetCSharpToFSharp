@@ -58,13 +58,20 @@ type TodoList() =
   member x.MarkAllComplete() = for i in items do i.MarkComplete()
   member x.ResetAll() = for i in items do i.Reset()
 
+// For the purposes of this demo and to avoid actually using a database,
+// I'm adding a property to Global.
+[<AutoOpen>]
+module Database =
+  let todoList = TodoList()
+  type MsdnWeb.Global with
+    static member TodoList = todoList
+
 // Controllers
 
 type TodoController() =
     inherit Controller()
-    static let mutable todoList = new TodoList()
     member this.Index () =
-        this.View(todoList) :> ActionResult
+        this.View(MsdnWeb.Global.TodoList) :> ActionResult
     [<HttpPost; ValidateAntiForgeryToken>]
     member this.Index (item) =
         if this.ModelState.IsValid then
