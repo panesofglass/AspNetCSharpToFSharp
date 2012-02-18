@@ -8,6 +8,13 @@ open System.ComponentModel.DataAnnotations
 open System.Web
 open System.Web.Mvc
 
+// Helpers
+
+[<AutoOpen>]
+module Helpers =
+  let toOption (a: Nullable<_>) =
+    if a.HasValue then Some(a.Value) else None
+
 // Models
 
 type TodoState
@@ -18,69 +25,119 @@ type TodoState
   override x.ToString() =
     match x with
     | Complete -> "Complete"
-    | OnTime -> "On-time"
-    | Overdue -> "Overdue"
+    | OnTime   -> "On-time"
+    | Overdue  -> "Overdue"
 
-type TodoItem() =
-  let mutable name = ""
-  let mutable dueDate = Unchecked.defaultof<Nullable<DateTime>>
-  let mutable completedDate = Unchecked.defaultof<Nullable<DateTime>>
-  [<Required>]
-  member x.Name
-    with get() = name
-    and set(v) = name <- v
-  member x.Due
-    with get() = dueDate
-    and set(v) = dueDate <- v
-  member x.Completed
-    with get() = completedDate
-    and set(v) = completedDate <- v
-  [<HiddenInput(DisplayValue = false)>]
+type TodoItem =
+  { Id : int
+    Name : string
+    Due : DateTime option
+    Completed : DateTime option }
+  with 
   member x.State =
-      if x.Completed.HasValue then Complete
-      elif not x.Due.HasValue || x.Due.Value <= DateTime.UtcNow then OnTime
-      else Overdue
-  member x.MarkComplete() =
-    x.Completed <- new Nullable<DateTime>(DateTime.UtcNow)
-  member x.Reset() =
-    x.Completed <- Unchecked.defaultof<Nullable<DateTime>>
+    match x with
+    | { Completed = Some _ } -> Complete
+    | { Due = None } -> OnTime
+    | { Due = Some due } when due <= DateTime.UtcNow.AddDays(1.) -> OnTime
+    | _ -> Overdue
 
-type TodoList() =
-  let mutable items : TodoItem list = []
-  member x.Items = items :> seq<TodoItem>
+type TodoList =
+  { Items : TodoItem list }
+  with  
   member x.State =
-    match items with
+    match x.Items with
     | [] -> OnTime
     | item::[] -> item.State
-    | _ -> items |> List.map (fun i -> i.State) |> List.max
-  member x.Add(item) = items <- item::items
-  member x.Remove(item) = items <- items |> List.filter ((<>) item)
-  member x.MarkAllComplete() = for i in items do i.MarkComplete()
-  member x.ResetAll() = for i in items do i.Reset()
+    | _ -> x.Items |> List.map (fun i -> i.State) |> List.max
+
+  member x.Add(item) =
+    let item =
+      if item.Id = 0 then
+        { item with Id = (x.Items |> List.map (fun i -> i.Id) |> List.max) + 1 }
+      else item
+    { x with Items = item::x.Items }
+
+  member x.Remove(item) =
+    { x with Items = x.Items |> List.filter ((<>) item) }
 
 // For the purposes of this demo and to avoid actually using a database,
 // I'm adding a property to Global.
-[<AutoOpen>]
-module Database =
-  let todoList = TodoList()
-  type MsdnWeb.Global with
-    static member TodoList = todoList
+type TodoAction
+  = Get of AsyncReplyChannel<TodoList>
+  | Add of TodoItem
+  | Remove of TodoItem
+  
+module Db =
+  let todoList = MailboxProcessor<TodoAction>.Start(fun inbox ->
+    let todos = { Items = [] }
+    let rec loop todos = async {
+      let! msg = inbox.Receive()
+      match msg with
+      | Get reply ->
+          reply.Reply todos
+          return! loop todos
+      | Add item -> return! loop <| todos.Add item
+      | Remove item -> return! loop <| todos.Remove item }
+    loop todos)
 
 // Controllers
 
 type TodoController() =
-    inherit Controller()
-    member this.Index () =
-        this.View(MsdnWeb.Global.TodoList) :> ActionResult
-    [<HttpPost; ValidateAntiForgeryToken>]
-    member this.Index (item) =
-        if this.ModelState.IsValid then
-          todoList.Add(item)
-          this.Response.StatusCode <- 201
-          this.RedirectToAction("Index") :> ActionResult
-        else this.View() :> ActionResult
-    member this.Create () =
-        this.View(new TodoItem()) :> ActionResult
+  inherit Controller()
+
+  member this.Index () =
+    let todoList = Db.todoList.PostAndReply(Get)
+    this.ViewData.["State"] <- todoList.State
+    this.ViewData.["Items"] <- todoList.Items :> seq<TodoItem>
+    this.View() :> ActionResult
+
+  [<HttpPost; ValidateAntiForgeryToken>]
+  member this.Index(name: string, due: Nullable<DateTime>, completed: Nullable<DateTime>) =
+    if not(String.IsNullOrEmpty name) then
+      this.ModelState.AddModelError("Name", "An item must have a name.")
+      this.View() :> ActionResult
+    else
+      let todoList = Db.todoList.PostAndReply(Get)
+      let item = { Id = 0; Name = name; Due = due |> toOption; Completed = completed |> toOption }
+      Db.todoList.Post(Add item)
+      this.Response.StatusCode <- 201
+      this.RedirectToAction("Index") :> ActionResult
+
+  member this.Create () =
+    this.View() :> ActionResult
+
+
+type TodoItemController() =
+  inherit Controller()
+
+  member this.Get() =
+    EmptyResult() :> ActionResult
+
+  [<HttpPut; ValidateAntiForgeryToken>]
+  member this.Put(id: int, name: string, due: Nullable<DateTime>, completed: Nullable<DateTime>) =
+    if id = 0 then
+      HttpNotFoundResult() :> ActionResult
+    elif not(String.IsNullOrEmpty name) then
+      this.ModelState.AddModelError("Name", "An item must have a name.")
+      this.View() :> ActionResult
+    else
+      let item = { Id = id; Name = name; Due = due |> toOption; Completed = completed |> toOption }
+      let todoList = Db.todoList.PostAndReply(Get)
+      match todoList.Items |> List.tryFind (fun i -> i.Id = item.Id) with
+      | Some(oldItem) ->
+          Db.todoList.Post(Remove oldItem)
+          Db.todoList.Post(Add item)
+          this.RedirectToAction("Index", "Todo") :> ActionResult
+      | _ -> HttpNotFoundResult() :> ActionResult
+
+  [<HttpDelete; ValidateAntiForgeryToken>]
+  member this.Delete(id) =
+    let todoList = Db.todoList.PostAndReply(Get)
+    match todoList.Items |> List.tryFind (fun i -> i.Id = id) with
+    | Some(item) ->
+        Db.todoList.Post(Remove item)
+        this.RedirectToAction("Index", "Todo") :> ActionResult
+    | _ -> HttpNotFoundResult() :> ActionResult
 
 // If you really want, you could even embed your views as resources
 // and use the MVC Areas feature to make this truly modular.
