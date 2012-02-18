@@ -6,9 +6,16 @@ namespace CSharp.Mvc.Controllers
 {
 	public class TodoController : Controller
 	{
+		private readonly TodoList _todoList;
+
+		public TodoController(TodoList todoList)
+		{
+			_todoList = todoList;
+		}
+
 		public ActionResult Index()
 		{
-			return View(Global.TodoList);
+			return View(_todoList);
 		}
 
 		[HttpPost, ValidateAntiForgeryToken]
@@ -16,7 +23,7 @@ namespace CSharp.Mvc.Controllers
 		{
 			if (ModelState.IsValid)
 			{
-				Global.TodoList.Add(item);
+				_todoList.Add(item);
 				Response.StatusCode = (int) HttpStatusCode.Created;
 				return RedirectToAction("Index");
 			}

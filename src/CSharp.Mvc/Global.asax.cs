@@ -2,12 +2,13 @@
 using System.Web.Mvc;
 using System.Web.Routing;
 using CSharp.Mvc.Models;
+using System.ComponentModel.Composition;
 
 namespace CSharp.Mvc
 {
 	public class Global : HttpApplication
 	{
-		public static readonly TodoList TodoList = new TodoList();
+		private static readonly TodoList s_todoList = new TodoList();
 
 		public static void RegisterGlobalFilters(GlobalFilterCollection filters)
 		{
@@ -17,10 +18,16 @@ namespace CSharp.Mvc
 		public static void RegisterRoutes(RouteCollection routes)
 		{
 			routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
-			routes.MapRoute(
-				"Default",
-				"{action}/{id}",
-				new { controller = "Todo", action = "Index", id = UrlParameter.Optional });
+			routes.MapRoute("Item", "item/{id}",
+				new { controller = "TodoItem", action = "Get" });
+			routes.MapRoute("Default", "{action}",
+				new { controller = "Todo", action = "Index" });
+		}
+
+		[Export]
+		public TodoList TodoList
+		{
+			get { return s_todoList; }
 		}
 
 		protected void Application_Start()

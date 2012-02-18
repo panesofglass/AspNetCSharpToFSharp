@@ -1,0 +1,50 @@
+﻿@model CSharp.Mvc.Models.TodoList
+
+<dl id="todolist">
+	<dt class="display-label">Status</dt>
+	<dd class="display-field">@Model.State</dd>
+	<dt class="display-label">Items</dt>
+	<dd class="display-field">
+		<table>
+			<thead>
+				<tr>
+					<th>Name</th>
+					<th>Status</th>
+					<th>Due</th>
+					<th>Completed</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				@foreach (var item in Model.Items)
+				{
+					<tr>
+						<td>@item.Name</td>
+						<td>@item.State</td>
+						<td>@item.Due</td>
+						<td>@item.Completed</td>
+						<td>
+							@using (Html.BeginForm("Put", "TodoItem", new { id = item.Id }))
+							{
+								@Html.HttpMethodOverride(HttpVerbs.Put)
+								@Html.AntiForgeryToken()
+								@Html.Hidden("Id", item.Id)
+								@Html.Hidden("Name", item.Name)
+								@Html.Hidden("Due", item.Due)
+								@Html.Hidden("Completed", DateTime.UtcNow)
+								<button type="submit" name="Submit">Mark Complete</button>
+							}
+							@using (Html.BeginForm("Delete", "TodoItem", new { id = item.Id }))
+							{
+								@Html.HttpMethodOverride(HttpVerbs.Delete)
+								@Html.AntiForgeryToken()
+								@Html.Hidden("Id", item.Id)
+								<button type="submit" name="Submit">Remove</button>
+							}
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</dd>
+</dl>

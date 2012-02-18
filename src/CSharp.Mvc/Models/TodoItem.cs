@@ -6,6 +6,20 @@ namespace CSharp.Mvc.Models
 {
 	public class TodoItem
 	{
+		private static int s_index = 0;
+		private readonly int _id;
+
+		public TodoItem()
+		{
+			_id = s_index++;
+		}
+
+		[HiddenInput(DisplayValue = false)]
+		public int Id
+		{
+			get { return _id; }
+		}
+
 		[Required]
 		public string Name { get; set; }
 
@@ -19,19 +33,9 @@ namespace CSharp.Mvc.Models
 			get
 			{
 				return Completed.HasValue ? TodoState.Complete :
-				                                               	!Due.HasValue || Due.Value <= DateTime.UtcNow ? TodoState.OnTime :
-				                                               	                                                                 	TodoState.Overdue;
+				    !Due.HasValue || Due.Value <= DateTime.UtcNow ? TodoState.OnTime :
+				    TodoState.Overdue;
 			}
-		}
-
-		public void MarkComplete()
-		{
-			Completed = DateTime.UtcNow;
-		}
-
-		public void Reset()
-		{
-			Completed = null;
 		}
 	}
 }

@@ -12,19 +12,14 @@ namespace CSharp.Mvc.Models
 			_todoItems = new List<TodoItem>();
 		}
 
-		public IEnumerable<TodoItem> Items
+		public IList<TodoItem> Items
 		{
 			get { return _todoItems; }
 		}
 
 		public TodoState State
 		{
-			get
-			{
-				return _todoItems.Any() ?
-				                        	_todoItems.Max(i => i.State) :
-				                        	                             	TodoState.OnTime;
-			}
+			get { return _todoItems.Any() ? _todoItems.Max(i => i.State) : TodoState.OnTime; }
 		}
 
 		public void Add(TodoItem item)
@@ -35,18 +30,6 @@ namespace CSharp.Mvc.Models
 		public void Remove(TodoItem item)
 		{
 			_todoItems.Remove(item);
-		}
-
-		public void MarkAllComplete()
-		{
-			foreach (TodoItem item in _todoItems)
-				item.MarkComplete();
-		}
-
-		public void ResetAll()
-		{
-			foreach (TodoItem item in _todoItems)
-				item.Reset();
 		}
 	}
 }
