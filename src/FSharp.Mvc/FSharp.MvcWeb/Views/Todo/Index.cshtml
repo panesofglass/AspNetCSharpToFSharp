@@ -1,4 +1,6 @@
-﻿@{
+﻿@using MsdnWeb.Todo
+@model TodoListViewModel
+@{
 	ViewBag.Title = "F# To-Do List";
 }
 
@@ -9,7 +11,7 @@
 	</header>
 	<dl id="todolist">
 		<dt class="display-label">Status</dt>
-		<dd class="display-field">@ViewBag.State</dd>
+		<dd class="display-field">@Model.Status</dd>
 		<dt class="display-label">Items</dt>
 		<dd class="display-field">
 			<table>
@@ -23,10 +25,10 @@
 					</tr>
 				</thead>
 				<tbody>
-					@foreach (var item in ViewBag.Items) {
+					@foreach (TodoItemViewModel item in Model.Items) {
 						<tr>
 							<td>@item.Name</td>
-							<td>@item.State</td>
+							<td>@item.Status</td>
 							<td>@item.Due</td>
 							<td>@item.Completed</td>
 							<td>

@@ -84,12 +84,24 @@ module Db =
 
 // View Models (only for MVC)
 
-type TodoItemViewModel =
-  { Id        : int
-    Name      : string
-    Due       : Nullable<DateTime>
-    Completed : Nullable<DateTime>
-    Status    : string }
+type TodoItemViewModel() =
+  let mutable id = 0
+  let mutable name : string = null
+  let mutable due = Unchecked.defaultof<Nullable<DateTime>>
+  let mutable completed = Unchecked.defaultof<Nullable<DateTime>>
+  let mutable status : string = null
+  member x.Id with get() = id and set(v) = id <- v
+  [<Required>]
+  member x.Name with get() = name and set(v) = name <- v
+  member x.Due with get() = due and set(v) = due <- v
+  member x.Completed with get() = completed and set(v) = completed <- v
+  member x.Status with get() = status and set(v) = status <- v
+
+type TodoListViewModel() =
+  let mutable items : seq<TodoItemViewModel> = Seq.empty
+  let mutable status : string = null
+  member x.Items with get() = items and set(v) = items <- v
+  member x.Status with get() = status and set(v) = status <- v
 
 // Controllers
 
@@ -98,24 +110,24 @@ type TodoController() =
 
   member this.Index () =
     let todoList = Db.todoList.PostAndReply(Get)
-    this.ViewData.["State"] <- todoList.State
-    this.ViewData.["Items"] <- todoList.Items 
-                               |> List.map (fun i ->
-                                  { Id = i.Id
-                                    Name = i.Name
-                                    Due = Option.toNullable i.Due
-                                    Completed = Option.toNullable i.Completed
-                                    Status = i.State.ToString() })
-    this.View() :> ActionResult
+    let model = TodoListViewModel()
+    model.Items <- todoList.Items 
+                   |> Seq.map (fun i ->
+                      new TodoItemViewModel(Id = i.Id,
+                                            Name = i.Name,
+                                            Due = Option.toNullable i.Due,
+                                            Completed = Option.toNullable i.Completed,
+                                            Status = i.State.ToString()))
+    model.Status <- todoList.State.ToString()
+    this.View(model) :> ActionResult
 
   [<HttpPost; ValidateAntiForgeryToken>]
-  member this.Index(name: string, due: Nullable<DateTime>, completed: Nullable<DateTime>) =
-    if not(String.IsNullOrEmpty name) then
-      this.ModelState.AddModelError("Name", "An item must have a name.")
-      this.View() :> ActionResult
+  member this.Index(item: TodoItemViewModel) =
+    if not this.ModelState.IsValid then
+      this.View(item) :> ActionResult
     else
       let todoList = Db.todoList.PostAndReply(Get)
-      let item = { Id = 0; Name = name; Due = Option.fromNullable due; Completed = Option.fromNullable completed }
+      let item : TodoItem = { Id = 0; Name = item.Name; Due = Option.fromNullable item.Due; Completed = Option.fromNullable item.Completed }
       Db.todoList.Post(Add item)
       this.Response.StatusCode <- 201
       this.RedirectToAction("Index") :> ActionResult
@@ -131,14 +143,13 @@ type TodoItemController() =
     EmptyResult() :> ActionResult
 
   [<HttpPut; ValidateAntiForgeryToken>]
-  member this.Put(id: int, name: string, due: Nullable<DateTime>, completed: Nullable<DateTime>) =
-    if id = 0 then
+  member this.Put(item: TodoItemViewModel) =
+    if item.Id = 0 then
       HttpNotFoundResult() :> ActionResult
-    elif not(String.IsNullOrEmpty name) then
-      this.ModelState.AddModelError("Name", "An item must have a name.")
-      this.View() :> ActionResult
+    elif not this.ModelState.IsValid then
+      this.View(item) :> ActionResult
     else
-      let item = { Id = id; Name = name; Due = due |> toOption; Completed = completed |> toOption }
+      let item : TodoItem = { Id = item.Id; Name = item.Name; Due = item.Due |> Option.fromNullable; Completed = item.Completed |> Option.fromNullable }
       let todoList = Db.todoList.PostAndReply(Get)
       match todoList.Items |> List.tryFind (fun i -> i.Id = item.Id) with
       | Some(oldItem) ->
