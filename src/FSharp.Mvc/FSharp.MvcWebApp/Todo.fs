@@ -10,10 +10,12 @@ open System.Web.Mvc
 
 // Helpers
 
-[<AutoOpen>]
-module Helpers =
-  let toOption (a: Nullable<_>) =
+module Option =
+  let fromNullable (a: Nullable<_>) =
     if a.HasValue then Some(a.Value) else None
+  let toNullable = function Some v -> new Nullable<_>(v)
+                          | _ -> Unchecked.defaultof<Nullable<_>>
+    
 
 // Models
 
@@ -80,6 +82,15 @@ module Db =
       | Remove item -> return! loop <| todos.Remove item }
     loop todos)
 
+// View Models (only for MVC)
+
+type TodoItemViewModel =
+  { Id        : int
+    Name      : string
+    Due       : Nullable<DateTime>
+    Completed : Nullable<DateTime>
+    Status    : string }
+
 // Controllers
 
 type TodoController() =
@@ -88,7 +99,13 @@ type TodoController() =
   member this.Index () =
     let todoList = Db.todoList.PostAndReply(Get)
     this.ViewData.["State"] <- todoList.State
-    this.ViewData.["Items"] <- todoList.Items :> seq<TodoItem>
+    this.ViewData.["Items"] <- todoList.Items 
+                               |> List.map (fun i ->
+                                  { Id = i.Id
+                                    Name = i.Name
+                                    Due = Option.toNullable i.Due
+                                    Completed = Option.toNullable i.Completed
+                                    Status = i.State.ToString() })
     this.View() :> ActionResult
 
   [<HttpPost; ValidateAntiForgeryToken>]
@@ -98,7 +115,7 @@ type TodoController() =
       this.View() :> ActionResult
     else
       let todoList = Db.todoList.PostAndReply(Get)
-      let item = { Id = 0; Name = name; Due = due |> toOption; Completed = completed |> toOption }
+      let item = { Id = 0; Name = name; Due = Option.fromNullable due; Completed = Option.fromNullable completed }
       Db.todoList.Post(Add item)
       this.Response.StatusCode <- 201
       this.RedirectToAction("Index") :> ActionResult
