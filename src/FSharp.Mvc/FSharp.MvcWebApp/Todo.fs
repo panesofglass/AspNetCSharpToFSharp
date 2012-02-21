@@ -53,11 +53,13 @@ type TodoList =
     | _ -> x.Items |> List.map (fun i -> i.State) |> List.max
 
   member x.Add(item) =
-    let item =
+    let item' =
       if item.Id = 0 then
-        { item with Id = (x.Items |> List.map (fun i -> i.Id) |> List.max) + 1 }
+        match x.Items with
+        | [] -> { item with Id = 1 }
+        | _ -> { item with Id = (x.Items |> List.map (fun i -> i.Id) |> List.max) + 1 }
       else item
-    { x with Items = item::x.Items }
+    { x with Items = item'::x.Items }
 
   member x.Remove(item) =
     { x with Items = x.Items |> List.filter ((<>) item) }
@@ -66,10 +68,10 @@ type TodoList =
 // I'm adding a property to Global.
 type TodoAction
   = Get of AsyncReplyChannel<TodoList>
-  | Add of TodoItem
-  | Remove of TodoItem
+  | Add of TodoItem * AsyncReplyChannel<unit>
+  | Remove of TodoItem * AsyncReplyChannel<unit>
   
-module Db =
+type Db() =
   let todoList = MailboxProcessor<TodoAction>.Start(fun inbox ->
     let todos = { Items = [] }
     let rec loop todos = async {
@@ -78,9 +80,22 @@ module Db =
       | Get reply ->
           reply.Reply todos
           return! loop todos
-      | Add item -> return! loop <| todos.Add item
-      | Remove item -> return! loop <| todos.Remove item }
+      | Add(item, reply) ->
+          let todos = todos.Add item
+          reply.Reply()
+          return! loop todos
+      | Remove(item, reply) ->
+          let todos = todos.Remove item
+          reply.Reply()
+          return! loop todos }
     loop todos)
+  member x.Get() = todoList.PostAndReply(Get)
+  member x.Add(item) = todoList.PostAndReply(fun c -> Add(item, c))
+  member x.Remove(item) = todoList.PostAndReply(fun c -> Remove(item, c))
+
+// Access the "database" via closure.
+module Server =
+  let db = Db()
 
 // View Models (only for MVC)
 
@@ -90,11 +105,13 @@ type TodoItemViewModel() =
   let mutable due = Unchecked.defaultof<Nullable<DateTime>>
   let mutable completed = Unchecked.defaultof<Nullable<DateTime>>
   let mutable status : string = null
+  [<HiddenInput(DisplayValue = false)>]
   member x.Id with get() = id and set(v) = id <- v
   [<Required>]
   member x.Name with get() = name and set(v) = name <- v
   member x.Due with get() = due and set(v) = due <- v
   member x.Completed with get() = completed and set(v) = completed <- v
+  [<HiddenInput(DisplayValue = false)>]
   member x.Status with get() = status and set(v) = status <- v
 
 type TodoListViewModel() =
@@ -109,7 +126,7 @@ type TodoController() =
   inherit Controller()
 
   member this.Index () =
-    let todoList = Db.todoList.PostAndReply(Get)
+    let todoList = Server.db.Get()
     let model = TodoListViewModel()
     model.Items <- todoList.Items 
                    |> Seq.map (fun i ->
@@ -126,44 +143,41 @@ type TodoController() =
     if not this.ModelState.IsValid then
       this.View(item) :> ActionResult
     else
-      let todoList = Db.todoList.PostAndReply(Get)
+      let todoList = Server.db.Get()
       let item : TodoItem = { Id = 0; Name = item.Name; Due = Option.fromNullable item.Due; Completed = Option.fromNullable item.Completed }
-      Db.todoList.Post(Add item)
+      Server.db.Add(item)
       this.Response.StatusCode <- 201
       this.RedirectToAction("Index") :> ActionResult
 
   member this.Create () =
-    this.View() :> ActionResult
+    this.View(new TodoItemViewModel()) :> ActionResult
 
 
 type TodoItemController() =
   inherit Controller()
 
-  member this.Get() =
-    EmptyResult() :> ActionResult
-
   [<HttpPut; ValidateAntiForgeryToken>]
-  member this.Put(item: TodoItemViewModel) =
+  member this.Index(id: int, item: TodoItemViewModel) =
     if item.Id = 0 then
       HttpNotFoundResult() :> ActionResult
     elif not this.ModelState.IsValid then
       this.View(item) :> ActionResult
     else
       let item : TodoItem = { Id = item.Id; Name = item.Name; Due = item.Due |> Option.fromNullable; Completed = item.Completed |> Option.fromNullable }
-      let todoList = Db.todoList.PostAndReply(Get)
+      let todoList = Server.db.Get()
       match todoList.Items |> List.tryFind (fun i -> i.Id = item.Id) with
       | Some(oldItem) ->
-          Db.todoList.Post(Remove oldItem)
-          Db.todoList.Post(Add item)
+          Server.db.Remove(oldItem)
+          Server.db.Add(item)
           this.RedirectToAction("Index", "Todo") :> ActionResult
       | _ -> HttpNotFoundResult() :> ActionResult
 
   [<HttpDelete; ValidateAntiForgeryToken>]
-  member this.Delete(id) =
-    let todoList = Db.todoList.PostAndReply(Get)
+  member this.Index (id: int) =
+    let todoList = Server.db.Get()
     match todoList.Items |> List.tryFind (fun i -> i.Id = id) with
     | Some(item) ->
-        Db.todoList.Post(Remove item)
+        Server.db.Remove(item)
         this.RedirectToAction("Index", "Todo") :> ActionResult
     | _ -> HttpNotFoundResult() :> ActionResult
 

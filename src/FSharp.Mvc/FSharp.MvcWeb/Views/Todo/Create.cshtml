@@ -1,4 +1,5 @@
-﻿@{
+﻿@model MsdnWeb.Todo.TodoItemViewModel
+@{
 	ViewBag.Title = "F# Create Item";
 }
 
@@ -6,28 +7,10 @@
 	<header>
 		<h2>@ViewBag.Title</h2>
 	</header>
-	@using (Html.BeginForm("Index", "Todo"))
-	{
+	@using (Html.BeginForm("Index", "Todo")) {
 		@Html.ValidationSummary()
 		@Html.AntiForgeryToken()
-		<div class="editor-label">
-			<label for="name">Name</label>
-		</div>
-		<div class="editor-field">
-			<input type="text" id="name" name="name" value="" />
-		</div>
-		<div class="editor-label">
-			<label for="due">Date due</label>
-		</div>
-		<div class="editor-field">
-			<input type="datetime" id="due" name="due" value="" />
-		</div>
-		<div class="editor-label">
-			<label for="completed">Date completed</label>
-		</div>
-		<div class="editor-field">
-			<input type="datetime" id="completed" name="completed" value="" />
-		</div>
+		@Html.EditorForModel()
 		<button type="submit" name="Submit">Create</button>
 		@Html.ActionLink("Cancel", "Index")
 	}
