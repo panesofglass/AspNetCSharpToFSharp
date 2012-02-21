@@ -19,7 +19,7 @@ namespace CSharp.Mvc
 		{
 			routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 			routes.MapRoute("Item", "item/{id}",
-				new { controller = "TodoItem", action = "Get" });
+				new { controller = "TodoItem", action = "Index" });
 			routes.MapRoute("Default", "{action}",
 				new { controller = "Todo", action = "Index" });
 		}

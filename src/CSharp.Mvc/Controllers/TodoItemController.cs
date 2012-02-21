@@ -14,13 +14,8 @@ namespace CSharp.Mvc.Controllers
 			_todoList = todoList;
 		}
 
-		public ActionResult Get(int id)
-		{
-			return new EmptyResult();
-		}
-
 		[HttpPut, ValidateAntiForgeryToken]
-		public ActionResult Put(int id, TodoItem item)
+		public ActionResult Index(int id, TodoItem item)
 		{
 			var removed = _todoList.Items.SingleOrDefault(i => i.Id == id);
 			if (removed == null)
@@ -35,7 +30,7 @@ namespace CSharp.Mvc.Controllers
 		}
 
 		[HttpDelete, ValidateAntiForgeryToken]
-		public ActionResult Delete(int id)
+		public ActionResult Index(int id)
 		{
 			var removed = _todoList.Items.SingleOrDefault(i => i.Id == id);
 			if (removed == null)

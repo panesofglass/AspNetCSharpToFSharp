@@ -24,7 +24,7 @@
 						<td>@item.Due</td>
 						<td>@item.Completed</td>
 						<td>
-							@using (Html.BeginForm("Put", "TodoItem", new { id = item.Id }))
+							@using (Html.BeginForm("Index", "TodoItem", new { id = item.Id }))
 							{
 								@Html.HttpMethodOverride(HttpVerbs.Put)
 								@Html.AntiForgeryToken()
@@ -34,7 +34,7 @@
 								@Html.Hidden("Completed", DateTime.UtcNow)
 								<button type="submit" name="Submit">Mark Complete</button>
 							}
-							@using (Html.BeginForm("Delete", "TodoItem", new { id = item.Id }))
+							@using (Html.BeginForm("Index", "TodoItem", new { id = item.Id }))
 							{
 								@Html.HttpMethodOverride(HttpVerbs.Delete)
 								@Html.AntiForgeryToken()
