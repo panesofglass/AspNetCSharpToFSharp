@@ -1,0 +1,44 @@
+﻿<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>Your site title</title>
+    <link href="~/themes/reset.css" rel="stylesheet" type="text/css" />
+    <link href="~/themes/site.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div>
+      <!-- Login info -->
+      <div id="loginInfo">
+        ${LoginInfo}
+      </div>
+
+      <!-- Header -->
+      <div id="header">
+        <div id="banner">
+          ${Banner}
+        </div>
+        <!-- Menu bar -->
+        <div id="menu">
+          ${Menu}
+        </div>
+        <div class="closer"></div>
+      </div>
+
+      <div id="main-container">
+        <!-- Main Content -->
+        <div id="main">
+          ${Main}
+        </div>
+        <!-- Sidebar -->
+        <div id="sidebar">
+          ${Sidebar}
+        </div>
+        <div class="closer"></div>
+      </div>
+
+      <!-- Footer -->
+      <div id="footer">
+        ${Footer}
+      </div>
+    </div>
+  </body>
+</html>

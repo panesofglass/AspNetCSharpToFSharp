@@ -1,0 +1,187 @@
+/* General */
+body
+{
+    background-color: #CEDBE7;
+    font-family: Myriad, Helvetica, Arial, sans-serif;
+    font-size : normal;
+}
+/* Layout */
+#header, #main-container, #footer, #loginInfo
+{
+    width: 980px;
+    margin-left : auto;
+    margin-right: auto;	
+    padding: 10px;
+}
+#loginInfo
+{
+    text-align : right;
+    margin-bottom : 5px;
+}
+#header
+{
+    background-color : #CEDBE7;
+    padding-bottom : 0;
+    padding-bottom : 1px;
+    -moz-border-radius: 5px 5px 0px 0px;
+    -webkit-border-radius: 5px 5px 0px 0px;
+}
+#main
+{
+    background-color: White;
+    margin-top : 5px;
+    padding-left: 30px;
+    width: 700px;
+    min-height: 500px;
+    float: left;
+    display: block;
+}
+#sidebar
+{
+    background-color: #eee;
+    margin-top : 5px;
+    padding: 10px;
+    width: 230px;
+    float: left;
+    display: block;
+    min-height: 200px;
+}
+#footer
+{
+    color: gray;
+    font-size : smaller;
+    margin-top: 10px;
+}
+/* Login Info */
+#loginInfo a
+{
+    background-color : #EBF5BE;
+    padding : 10px;
+    text-decoration : none;
+    color : Gray;
+    font-weight : bold;
+    font-size : small;
+}
+#loginInfo a:hover
+{
+    background-color: #97D5F0;
+}
+/* Banner */
+#banner
+{
+    display : block;
+    margin: 0px;
+    float: left;
+}
+#banner h2
+{
+    font-size: 32px;
+    margin: 0;
+    font-weight : normal;
+}
+/* Menu */
+#menu
+{
+    color: White;
+    display: block;
+    margin-left : 30px;
+    padding : 0;
+    vertical-align : bottom;
+    float: right;
+}
+#menu .menu-item
+{
+    width : 110px;
+    text-align : center;
+    background-color : White;
+    margin: 0px;
+    font-size : smaller;
+    margin-right: 5px;
+    -moz-border-radius: 3px 3px 0px 0px;
+    -webkit-border-radius: 3px 3px 0px 0px;	
+    display : inline-block;
+}
+#menu .menu-item:hover
+{
+    background-color : #97D5F0;
+}
+#menu a
+{
+    color: White;
+    text-decoration : none;
+    font-size : 13px;
+    font-weight: bold;
+    color : Gray;
+    padding: 10px;
+    width : 85px;
+    display: inline-block;
+    padding : 10px;
+}
+#menu a:hover
+{
+    color : White;
+}
+/* Main  */
+#main-container
+{
+    background-color: White;
+}
+#main h1
+{
+    color: #97D5F0;
+    font-size : 28px;
+}
+#main .formlet h1
+{
+    font-size : 23px;
+    color : Green;
+    margin-bottom : 10px;
+}
+#main .formlet input, #main .formlet select
+{
+    padding : 5px;
+}
+#main .formlet input[type="button"]
+{
+    margin-top: 10px;
+    padding : 10px;
+}
+#main .formlet fieldset
+{
+    border: 1px solid gray !important;
+    color : Green;
+}
+#main .loadingPane
+{
+    
+    height : 48px;
+    width : 250px;
+    background-image : url(http://us.i1.yimg.com/us.yimg.com/i/us/per/gr/gp/rel_interstitial_loading.gif);
+    background-repeat : no-repeat;
+    margin-top : 20px;
+    display:block;
+}
+#main .infoPanel, #main .warningPanel
+{
+    margin-top : 20px;
+    margin-bottom : 20px;
+    padding : 10px;
+    border: 1px solid #d2d2c6;
+    padding-right : 30px;
+    font-size : small;
+    font-weight : normal;	
+    
+}
+#main .infoPanel
+{
+    background-color : #EBF5BE;
+}
+#main .warningPanel
+{
+    background-color : #f5e4e4;
+}
+.closer
+{
+    clear: both;
+    float: none;
+}
